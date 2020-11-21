@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>org.example.app</groupId>
+    <artifactId>bookmark</artifactId>
+    <version>1.0-SNAPSHOT</version>
+    <packaging>pom</packaging>
+
+    <name>Bookmark Application</name>
+
+    <modules>
+        <module>bookmark-server</module>
+        <module>bookmark-api</module>
+    </modules>
+
+    <properties>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.compiler.source>11</maven.compiler.source>
+        <maven.compiler.target>11</maven.compiler.target>
+
+        <!-- maven plugin dependencies version -->
+        <maven.clear.version>3.1.0</maven.clear.version>
+        <maven.resources.version>3.0.2</maven.resources.version>
+        <maven.compiler.version>3.8.0</maven.compiler.version>
+        <maven.surefire.version>2.22.1</maven.surefire.version>
+        <maven.jar.version>3.1.0</maven.jar.version>
+        <maven.install.version>2.5.2</maven.install.version>
+        <maven.deploy.version>2.8.2</maven.deploy.version>
+        <maven.site.version>3.7.1</maven.site.version>
+        <maven.report.version>3.0.0</maven.report.version>
+        <maven.jaxws.version>2.6</maven.jaxws.version>
+        <maven.checkstyle.version>3.1.1</maven.checkstyle.version>
+        <maven.pmd.version>3.13.0</maven.pmd.version>
+        <maven.spotbugs.plugin.version>4.1.3</maven.spotbugs.plugin.version>
+        <maven.spotbugs.version>4.1.4</maven.spotbugs.version>
+        <maven.shade.version>3.2.4</maven.shade.version>
+
+        <!-- openapi dependencies versions -->
+        <openapigenerator.version>4.3.1</openapigenerator.version>
+        <javaxannotationapi.version>1.3.2</javaxannotationapi.version>
+        <swagger-annotations.version>1.6.2</swagger-annotations.version>
+        <spotbugs-annotations.version>3.0.2</spotbugs-annotations.version>
+        <jackson.version>2.11.3</jackson.version>
+        <jackson-nullable.version>0.2.1</jackson-nullable.version>
+
+        <!-- build dependencies versions -->
+        <log4j2.version>2.14.0</log4j2.version>
+        <jetty.version>9.4.34.v20201102</jetty.version>
+        <jersey.version>2.32</jersey.version>
+        <javaxrsapi.version>2.1.1</javaxrsapi.version>
+        <javaxactivationapi.version>1.2.0</javaxactivationapi.version>
+        <jaxbapi.version>2.3.1</jaxbapi.version>
+        <java-jwt.version>0.11.2</java-jwt.version>
+
+        <!-- test dependencies version -->
+        <junit.version>4.12</junit.version>
+        <junitparams.version>1.0.5</junitparams.version>
+        <mockitocore.version>2.18.3</mockitocore.version>
+        <awaitility.version>3.0.0</awaitility.version>
+    </properties>
+
+    <dependencies>
+
+    </dependencies>
+
+    <build>
+        <pluginManagement><!-- lock down plugins versions to avoid using Maven defaults (may be moved to parent pom) -->
+            <plugins>
+                <!-- clean lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#clean_Lifecycle -->
+                <plugin>
+                    <artifactId>maven-clean-plugin</artifactId>
+                    <version>${maven.clear.version}</version>
+                </plugin>
+                <!-- default lifecycle, jar packaging: see https://maven.apache.org/ref/current/maven-core/default-bindings.html#Plugin_bindings_for_jar_packaging -->
+                <plugin>
+                    <artifactId>maven-resources-plugin</artifactId>
+                    <version>${maven.resources.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-surefire-plugin</artifactId>
+                    <version>${maven.surefire.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-jar-plugin</artifactId>
+                    <version>${maven.jar.version}</version>
+                    <configuration>
+                        <archive>
+                            <manifest>
+                                <addClasspath>true</addClasspath>
+                                <classpathPrefix>lib/</classpathPrefix>
+                                <mainClass>com.ericsson.m2m.App</mainClass>
+                            </manifest>
+                        </archive>
+                    </configuration>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-install-plugin</artifactId>
+                    <version>${maven.install.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-deploy-plugin</artifactId>
+                    <version>${maven.deploy.version}</version>
+                </plugin>
+                <!-- site lifecycle, see https://maven.apache.org/ref/current/maven-core/lifecycles.html#site_Lifecycle -->
+                <plugin>
+                    <artifactId>maven-site-plugin</artifactId>
+                    <version>${maven.site.version}</version>
+                </plugin>
+                <plugin>
+                    <artifactId>maven-project-info-reports-plugin</artifactId>
+                    <version>${maven.report.version}</version>
+                </plugin>
+            </plugins>
+        </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>${maven.compiler.version}</version>
+                <dependencies>
+                    <dependency>
+                        <groupId>org.ow2.asm</groupId>
+                        <artifactId>asm</artifactId>
+                        <!-- Use newer version of ASM for Java 11 -->
+                        <version>6.2.1</version>
+                    </dependency>
+                </dependencies>
+            </plugin>
+            <!-- Used to create uber-jar -->
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>${maven.shade.version}</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>shade</goal>
+                        </goals>
+                        <configuration>
+                            <artifactSet>
+                                <excludes>
+                                    <exclude>classworlds:classworlds</exclude>
+                                    <exclude>junit:junit</exclude>
+                                    <exclude>jmock:*</exclude>
+                                    <exclude>*:xml-apis</exclude>
+                                    <exclude>org.apache.maven:lib:tests</exclude>
+                                    <exclude>log4j:log4j:jar:</exclude>
+                                </excludes>
+                            </artifactSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

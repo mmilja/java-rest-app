@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+     This file specifies a spotbugs filter for excluding reports that should not be considered errors.
+-->
+<FindBugsFilter>
+</FindBugsFilter>

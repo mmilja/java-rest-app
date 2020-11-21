@@ -1,0 +1,279 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: 'Bookmark API interface'
+  description: 'Bookmark interface specification'
+servers:
+  - url: http://{apiRoot}/management/v1
+    variables:
+      apiRoot:
+        default: bookmark.com
+        description: address for accessing bookmark interface
+paths:
+  '/user/register':
+    post:
+      summary: Register a new user
+      operationId: RegisterUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserData'
+        required: true
+      responses:
+        '200':
+          description: User registered
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/user/login':
+    post:
+      summary: Log-in an existing user
+      operationId: LoginUser
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserData'
+        required: true
+      responses:
+        '200':
+          description: User successfully logged-in
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/user/logout':
+    post:
+      summary: Log-out a logged-in user
+      operationId: LogoutUser
+      security:
+        - jwsAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserName'
+        required: true
+      responses:
+        '200':
+          description: User successfully logged-out
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/bookmark':
+    get:
+      summary: Get bookmarks for user
+      operationId: GetBookmarks
+      security:
+        - jwsAuth: [ ]
+      responses:
+        '200':
+          description: List of bookmarks recieved.
+          content:
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/Bookmarks'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    post:
+      summary: Add bookmark for user
+      operationId: AddBookmark
+      security:
+        - jwsAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bookmark'
+        required: true
+      responses:
+        '200':
+          description: Bookmark successfully added
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete the bookmark with the given name
+      operationId: DeleteBookmark
+      security:
+        - jwsAuth: [ ]
+      responses:
+        '200':
+          description: Deleted bookmark with the given name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkName'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Bookmark with the given name not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/bookmark/{bookmarkName}':
+    parameters:
+      - name: bookmarkName
+        in: path
+        description: Bookmark name
+        required: true
+        schema:
+          type: string
+    post:
+      summary: Update bookmark with the given name
+      operationId: UpdateBookmark
+      security:
+        - jwsAuth: [ ]
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/Bookmark'
+        required: true
+      responses:
+        '200':
+          description: Bookmark successfully updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Message'
+        '400':
+          $ref: '#/components/responses/BadRequestError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+  '/bookmark/public':
+    get:
+      summary: Get all public bookmarks
+      operationId: GetPublicBookmarks
+      responses:
+        '200':
+          description: List of public bookmarks recieved.
+          content:
+            multipart/form-data:
+              schema:
+                $ref: '#/components/schemas/BookmarkLinks'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
+
+components:
+  securitySchemes:
+    jwsAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    InternalServerError:
+      description: Internal server error
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+    BadRequestError:
+      description: Invalid input parameters
+      content:
+        application/problem+json:
+          schema:
+            $ref: '#/components/schemas/Error'
+  schemas:
+    UserName:
+      type: string
+    UserPassword:
+      type: string
+    UserData:
+      type: object
+      required:
+        - name
+        - password
+      properties:
+        name:
+          $ref: '#/components/schemas/UserName'
+        password:
+          $ref: '#/components/schemas/UserPassword'
+    BookmarkURI:
+      type: string
+      format: uri
+    BookmarkName:
+      type: string
+    BookmarkAccess:
+      type: string
+      enum:
+        - PRIVATE
+        - PUBLIC
+    BookmarkLink:
+      type: object
+      required:
+        - uri
+        - name
+      properties:
+        uri:
+          $ref: '#/components/schemas/BookmarkURI'
+        name:
+          $ref: '#/components/schemas/BookmarkName'
+    BookmarkLinks:
+      type: array
+      items:
+        $ref: '#/components/schemas/BookmarkLink'
+    Bookmark:
+      type: object
+      required:
+        - bookmarkLink
+      properties:
+        bookmarkLink:
+          $ref: '#/components/schemas/BookmarkLink'
+        access:
+          $ref: '#/components/schemas/BookmarkAccess'
+    Bookmarks:
+      type: array
+      items:
+        $ref: '#/components/schemas/Bookmark'
+    Message:
+      type: object
+      properties:
+        message:
+          type: string
+    Error:
+      type: object
+      properties:
+        summary:
+          type: string
+        cause:
+          type: string
