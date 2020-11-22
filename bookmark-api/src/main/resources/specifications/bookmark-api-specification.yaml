@@ -4,7 +4,7 @@ info:
   title: 'Bookmark API interface'
   description: 'Bookmark interface specification'
 servers:
-  - url: http://{apiRoot}/management/v1
+  - url: http://{apiRoot}/management
     variables:
       apiRoot:
         default: bookmark.com
@@ -87,7 +87,7 @@ paths:
         '200':
           description: List of bookmarks recieved.
           content:
-            multipart/form-data:
+            application/json:
               schema:
                 $ref: '#/components/schemas/Bookmarks'
         '400':
@@ -118,28 +118,6 @@ paths:
           $ref: '#/components/responses/BadRequestError'
         '401':
           $ref: '#/components/responses/UnauthorizedError'
-        '500':
-          $ref: '#/components/responses/InternalServerError'
-    delete:
-      summary: Delete the bookmark with the given name
-      operationId: DeleteBookmark
-      security:
-        - jwsAuth: [ ]
-      responses:
-        '200':
-          description: Deleted bookmark with the given name
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/BookmarkName'
-        '401':
-          $ref: '#/components/responses/UnauthorizedError'
-        '404':
-          description: Bookmark with the given name not found
-          content:
-            application/problem+json:
-              schema:
-                $ref: '#/components/schemas/Error'
         '500':
           $ref: '#/components/responses/InternalServerError'
   '/bookmark/{bookmarkName}':
@@ -174,15 +152,39 @@ paths:
           $ref: '#/components/responses/UnauthorizedError'
         '500':
           $ref: '#/components/responses/InternalServerError'
+    delete:
+      summary: Delete the bookmark with the given name
+      operationId: DeleteBookmark
+      security:
+        - jwsAuth: [ ]
+      responses:
+        '200':
+          description: Deleted bookmark with the given name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BookmarkName'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '404':
+          description: Bookmark with the given name not found
+          content:
+            application/problem+json:
+              schema:
+                $ref: '#/components/schemas/Error'
+        '500':
+          $ref: '#/components/responses/InternalServerError'
   '/bookmark/public':
     get:
       summary: Get all public bookmarks
       operationId: GetPublicBookmarks
+      security:
+        - jwsAuth: [ ]
       responses:
         '200':
           description: List of public bookmarks recieved.
           content:
-            multipart/form-data:
+            application/json:
               schema:
                 $ref: '#/components/schemas/BookmarkLinks'
         '500':

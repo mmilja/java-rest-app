@@ -11,10 +11,10 @@ import javax.ws.rs.Consumes;
 import javax.ws.rs.HeaderParam;
 import javax.ws.rs.POST;
 import javax.ws.rs.Path;
-import javax.ws.rs.PathParam;
 import javax.ws.rs.Produces;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import java.util.Map;
 
 /**
  * Implements methods used to manage Bookmark objects.
@@ -51,11 +51,11 @@ public class UserHandler {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/register")
-    public Response registerUser(@PathParam("UserData") UserData userData) {
+    public Response registerUser(UserData userData) {
 
         Response response;
         UserStatus registrationStatus = this.userManager.registerUser(userData);
-        LOGGER.info("Registering user: " + userData.getName());
+        LOGGER.info("Registering user attempt: " + userData.getName());
 
         switch (registrationStatus) {
             case REGISTERED:
@@ -70,8 +70,12 @@ public class UserHandler {
                 response = Response.status(Response.Status.NO_CONTENT)
                         .entity("Not enough information provided to create the user.").build();
                 break;
+            case PASSWORD_TOO_LONG:
+                response = Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Provided password is too long.").build();
+                break;
             default:
-                response = Response.status(Response.Status.NOT_FOUND).entity(DEFAULT_MESSAGE).build();
+                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(DEFAULT_MESSAGE).build();
                 break;
         }
 
@@ -82,57 +86,72 @@ public class UserHandler {
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/login")
-    public Response loginUser(@PathParam("UserData") UserData userData) {
+    public Response loginUser(UserData userData) {
 
         Response response;
-        UserStatus loginStatus = this.userManager.loginUser(userData);
-        LOGGER.info("User login: " + userData.getName());
+        Map.Entry<UserStatus, String> loginStatus = this.userManager.loginUser(userData);
+        LOGGER.info("User login attempt: " + userData.getName());
 
-        switch (loginStatus) {
+        switch (loginStatus.getKey()) {
             case OK:
                 response = Response.status(Response.Status.CREATED)
-                        .entity("Successfully logged-in user: " + userData.getName()).build();
+                        .entity("Successfully logged-in user: " + userData.getName()
+                                + "\n Use the following string for authorization: " + loginStatus.getValue()).build();
                 break;
             case NOT_FOUND:
                 response = Response.status(Response.Status.NOT_ACCEPTABLE)
-                        .entity("User not found: " + userData.getName()).build();
+                        .entity("User does not exist: " + userData.getName()).build();
                 break;
             case INVALID_DATA:
                 response = Response.status(Response.Status.NO_CONTENT)
                         .entity("Not enough information provided to log-in the user.").build();
                 break;
+            case LOGIN_ISSUE:
+                response = Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Could not log in the user.").build();
+                break;
+            case LOGGED_IN:
+                response = Response.status(Response.Status.BAD_REQUEST)
+                        .entity("User with that name is already logged in.").build();
+                break;
+            case INVALID_PASSWORD:
+                response = Response.status(Response.Status.BAD_REQUEST)
+                        .entity("Provided password is invalid.").build();
+                break;
             default:
-                response = Response.status(Response.Status.NOT_FOUND).entity(DEFAULT_MESSAGE).build();
+                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(DEFAULT_MESSAGE).build();
                 break;
         }
-
         return response;
     }
 
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
-    @Path("/register")
-    public Response logoutUser(@PathParam("UserName") String userName,
-                               @HeaderParam("authorization") String authString) {
+    @Path("/logout")
+    public Response logoutUser(String userName, @HeaderParam("authorization") String authString) {
 
 
         Response response;
         UserStatus logoutStatus = this.userManager.logoutUser(userName, authString);
-        LOGGER.info("User logout: " + userName);
+        LOGGER.info("User logout attempt: " + userName);
 
         switch (logoutStatus) {
             case OK:
-                response = Response.status(Response.Status.CREATED)
+                response = Response.status(Response.Status.OK)
                         .entity("Successfully logged-out user: " + userName).build();
                 break;
             case NOT_FOUND:
                 response = Response.status(Response.Status.NOT_ACCEPTABLE)
-                        .entity("User not found: " + userName).build();
+                        .entity("User does not exist: " + userName).build();
                 break;
             case INVALID_DATA:
                 response = Response.status(Response.Status.NO_CONTENT)
-                        .entity("Not enough information provided to create the user.").build();
+                        .entity("Information to log out the user is not correct.").build();
+                break;
+            case UNAUTHORIZERD:
+                response = Response.status(Response.Status.UNAUTHORIZED)
+                        .entity("Authorization information is not correct.").build();
                 break;
             default:
                 response = Response.status(Response.Status.NOT_FOUND).entity(DEFAULT_MESSAGE).build();

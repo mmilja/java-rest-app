@@ -38,24 +38,17 @@ public class BookmarkApp {
      * @param args for additional options.
      */
     public static void main(String[] args) {
-        LOGGER.info("YCSB manager starting up");
+        LOGGER.info("Bookmark App starting up");
 
         Utils utils = new Utils();
-//    InternalConfigMgr internalConfigMgr;
-
-//    ObjectMapper objectMapperCfg = new ObjectMapper(new YAMLFactory());
         InternalConfig internalConfig;
 
         LOGGER.info("Reading data from the environment and the configuration files");
         try {
-//      internalConfigMgr = new InternalConfigMgr(ycsbUtils, objectMapperCfg);
-//      internalConfigMgr.loadConfig();
-
-//      internalConfig = internalConfigMgr.getInternalConfig();
 
             internalConfig = new InternalConfig();
             internalConfig.setHttpPort(8080);
-            internalConfig.setRootApiPath("/bookmark");
+            internalConfig.setRootApiPath("/management");
 
             IJavaJws javaJws = JavaJws.getInstance(utils);
             UserManager.getInstance(utils, javaJws);

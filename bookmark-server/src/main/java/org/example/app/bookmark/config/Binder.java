@@ -2,6 +2,8 @@ package org.example.app.bookmark.config;
 
 import org.example.app.bookmark.bookmarkmanager.BookmarkManager;
 import org.example.app.bookmark.bookmarkmanager.IBookmarkManager;
+import org.example.app.bookmark.usermanager.IUserManager;
+import org.example.app.bookmark.usermanager.UserManager;
 import org.glassfish.jersey.internal.inject.AbstractBinder;
 
 /**
@@ -12,5 +14,6 @@ public class Binder extends AbstractBinder {
     protected final void configure() {
         // Injects singletons into REST resources
         bind(BookmarkManager.getInstance()).to(IBookmarkManager.class);
+        bind(UserManager.getInstance()).to(IUserManager.class);
     }
 }

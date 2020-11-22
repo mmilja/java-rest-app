@@ -53,6 +53,7 @@
         <javaxrsapi.version>2.1.1</javaxrsapi.version>
         <javaxactivationapi.version>1.2.0</javaxactivationapi.version>
         <jaxbapi.version>2.3.1</jaxbapi.version>
+        <jaxb.version>2.3.3</jaxb.version>
         <java-jwt.version>0.11.2</java-jwt.version>
 
         <!-- test dependencies version -->
@@ -91,7 +92,7 @@
                             <manifest>
                                 <addClasspath>true</addClasspath>
                                 <classpathPrefix>lib/</classpathPrefix>
-                                <mainClass>com.ericsson.m2m.App</mainClass>
+                                <mainClass>org.example.app.bookmark.BookmarkApp</mainClass>
                             </manifest>
                         </archive>
                     </configuration>

@@ -3,13 +3,18 @@ package org.example.app.bookmark.usermanager;
 import com.ericsson.adp.bookmark_api.model.UserData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
-import org.example.app.bookmark.exceptions.ExecutionFailedException;
+import org.example.app.bookmark.exceptions.BadParametersException;
 import org.example.app.bookmark.javajws.IJavaJws;
+import org.example.app.bookmark.javajws.JavaJwsToken;
+import org.example.app.bookmark.javajws.JwsStatus;
 import org.example.app.bookmark.user.User;
 import org.example.app.bookmark.utils.IUtils;
 
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 /**
  * Class that manages users.
@@ -92,46 +97,74 @@ public class UserManager implements IUserManager {
             return UserStatus.USERNAME_EXISTS;
         }
 
-        User user = new User(userData);
+        User user;
+        try {
+         user = new User(userData);
+        } catch (BadParametersException e) {
+            return UserStatus.PASSWORD_TOO_LONG;
+        }
+
         this.userList.add(user);
+
+        LOGGER.info("User list: {}", (long) this.userList.size());
 
         return UserStatus.REGISTERED;
     }
 
     @Override
-    public UserStatus loginUser(final UserData userData) {
+    public Map.Entry<UserStatus, String> loginUser(final UserData userData) {
+        String jws = "";
         if (userData.getName().isEmpty() || userData.getPassword().isEmpty()) {
-            return UserStatus.INVALID_DATA;
+            return new AbstractMap.SimpleEntry<>(UserStatus.INVALID_DATA, jws);
         }
 
-        if (userList.stream().noneMatch(user -> user.getUsername().equals(userData.getName()))) {
-            return UserStatus.NOT_FOUND;
-        }
-
-        User user = userList.stream().filter(tmpUser -> tmpUser.getUsername().equals(userData.getName())).findFirst().
-                orElseThrow(() -> new ExecutionFailedException("Failed to get user with name: " + userData.getName()));
-        if (checkPassword(userData.getPassword(), user.getPassword())) {
-            this.javaJws.createJws(userData.getName());
+        User user;
+        Optional<User> optionalUser =
+                this.userList.stream().filter(tmpUser -> tmpUser.getUsername().equals(userData.getName())).findFirst();
+        if (optionalUser.isPresent()) {
+            user = optionalUser.get();
         } else {
-            return UserStatus.INVALID_PASSWORD;
+            return new AbstractMap.SimpleEntry<>(UserStatus.NOT_FOUND, jws);
         }
 
-        return UserStatus.OK;
+        if (checkPassword(userData.getPassword(), user.getPassword())) {
+            if (!this.javaJws.checkUserLoggedIn(user.getUsername())) {
+                JavaJwsToken javaJwsToken = this.javaJws.createJws(userData.getName());
+                if (javaJwsToken.getJwsStatus().equals(JwsStatus.CREATED)) {
+                    jws = javaJwsToken.getJwsToken();
+                    return new AbstractMap.SimpleEntry<>(UserStatus.OK, jws);
+                } else {
+                    return new AbstractMap.SimpleEntry<>(UserStatus.LOGIN_ISSUE, jws);
+                }
+            } else {
+                return new AbstractMap.SimpleEntry<>(UserStatus.LOGGED_IN, jws);
+            }
+        } else {
+            return new AbstractMap.SimpleEntry<>(UserStatus.INVALID_PASSWORD, jws);
+        }
     }
 
     @Override
-    public UserStatus logoutUser(final String userName, final String suthString) {
-        if (userName.isEmpty() || suthString.isEmpty()) {
+    public UserStatus logoutUser(final String userName, final String authString) {
+        if (userName.isEmpty() || authString.isEmpty()) {
             return UserStatus.INVALID_DATA;
         }
 
-        if (userList.stream().noneMatch(user -> user.getUsername().equals(userName))) {
+        if (this.userList.stream().noneMatch(user -> user.getUsername().equals(userName))) {
             return UserStatus.NOT_FOUND;
         }
 
-        this.javaJws.abolishJws(userName, suthString);
-
-        return UserStatus.OK;
+        JwsStatus status = this.javaJws.abolishJws(userName, authString);
+        switch (status) {
+            case REMOVED:
+                return UserStatus.OK;
+            case UNAUTHORIZED:
+                return UserStatus.UNAUTHORIZERD;
+            case NO_SESSION:
+                return  UserStatus.NOT_FOUND;
+            default:
+                return UserStatus.INVALID_DATA;
+        }
     }
 
 
@@ -146,12 +179,9 @@ public class UserManager implements IUserManager {
     private boolean checkPassword(String providedPassword, String internalPassword) {
         int integer = 1;
         boolean equals = true;
-        int length = Math.max(providedPassword.length(), internalPassword.length());
-        if (providedPassword.length() > internalPassword.length()) {
-            providedPassword = padPassword(providedPassword, length);
-        } else if (providedPassword.length() < internalPassword.length()) {
-            internalPassword = padPassword(internalPassword, length);
-        }
+        int length = User.MAXIMUM_PASSWORD_LENGTH;
+        providedPassword = padPassword(providedPassword, length);
+        internalPassword = padPassword(internalPassword, length);
 
         for (int i = 0; i < length; i++) {
             if (providedPassword.charAt(i) != internalPassword.charAt(i)) {

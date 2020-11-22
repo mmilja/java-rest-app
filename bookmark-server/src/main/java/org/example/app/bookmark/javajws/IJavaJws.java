@@ -20,16 +20,23 @@ public interface IJavaJws {
      *
      * @param userName of the current session owner.
      * @param authString of the current session owner.
-     * @return if session was abolished successfully.
+     * @return status code signaling the success or failure of the operation.
      */
-    boolean abolishJws(final String userName, final String authString);
+    JwsStatus abolishJws(final String userName, final String authString);
 
     /**
      * Authorize the user from the provided token string.
      *
      * @param authString that holds the token information.
-     * @param userUuid that identifies the user.
-     * @return true if user is authenticated, false otehrwise.
+     * @return username in jws subject, or empty string is jws is not recognized.
      */
-    boolean authorizeUser(final String authString, final UUID userUuid);
+    String authorizeUser(final String authString);
+
+    /**
+     * Check if the user session already exists.
+     *
+     * @param username to check.
+     * @return true if the user session exists, false otherwise.
+     */
+    boolean checkUserLoggedIn(final String username);
 }

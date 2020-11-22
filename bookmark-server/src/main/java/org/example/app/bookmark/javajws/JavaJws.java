@@ -1,5 +1,7 @@
 package org.example.app.bookmark.javajws;
 
+import io.jsonwebtoken.Claims;
+import io.jsonwebtoken.Jws;
 import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
@@ -8,16 +10,12 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.app.bookmark.utils.IUtils;
 
-import java.nio.charset.Charset;
-import java.nio.charset.StandardCharsets;
 import java.security.KeyPair;
 import java.security.PrivateKey;
 import java.security.PublicKey;
 import java.sql.Date;
 import java.time.Instant;
-import java.util.AbstractMap;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.Map;
 import java.util.UUID;
 
@@ -29,24 +27,9 @@ public class JavaJws implements IJavaJws {
     private static final Logger LOGGER = LogManager.getLogger(JavaJws.class.getSimpleName());
 
     /**
-     * Standard charset encoding assumed for files.
-     */
-    public static final Charset CHARSET = StandardCharsets.UTF_8;
-
-    /**
      * Name of the jws token issuer.
      */
     public static final String JWS_ISSUER = "BookmarkApplication";
-
-    /**
-     * Property used to set a key ID parameter in header.
-     */
-    public static final String KEY_ID_PARAM = "kid";
-
-    /**
-     * Duration of the jws in seconds.
-     */
-    public static final long JWS_DURATION = 36000L;
 
     /**
      * Singleton instance.
@@ -62,7 +45,17 @@ public class JavaJws implements IJavaJws {
      * Map containing a user and a private key associated with that user.
      * Contains a list of active sessions.
      */
-    private final Map<String, Map.Entry <UUID, PrivateKey>> userKeyMap;
+    private final Map<String, String> authorizedUsers;
+
+    /**
+     * Private key used to verify the jws signature.
+     */
+    private final PrivateKey privateKey;
+
+    /**
+     * Public key used to sign the jws.
+     */
+    private final PublicKey publicKey;
 
     /**
      * Private constructor.
@@ -72,7 +65,10 @@ public class JavaJws implements IJavaJws {
     private JavaJws(final IUtils utils) {
         this.utils = utils;
 
-        this.userKeyMap = new HashMap<>();
+        this.authorizedUsers = new HashMap<>();
+        KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
+        this.privateKey = keyPair.getPrivate();
+        this.publicKey = keyPair.getPublic();
     }
 
     /**
@@ -105,20 +101,14 @@ public class JavaJws implements IJavaJws {
     public JavaJwsToken createJws(final String username) {
         JavaJwsToken javaJwsToken = new JavaJwsToken();
 
-        if (userKeyMap.containsKey(username)) {
+        if (this.authorizedUsers.containsKey(username)) {
             javaJwsToken.setJwsStatus(JwsStatus.ALREADY_EXISTS);
         } else {
-            UUID userId = UUID.randomUUID();
-            KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
-            PrivateKey privateKey = keyPair.getPrivate();
-            PublicKey publicKey = keyPair.getPublic();
-            Map.Entry<UUID, PrivateKey> userEntry = new AbstractMap.SimpleEntry<>(userId, privateKey);
-            this.userKeyMap.put(username, userEntry);
+            String uuid = UUID.randomUUID().toString();
+            String jws = Jwts.builder().setIssuer(JWS_ISSUER).setSubject(username).setId(uuid)
+                    .setIssuedAt(Date.from(Instant.now())).signWith(privateKey).compact();
 
-            String jws = Jwts.builder().setIssuer(JWS_ISSUER).setSubject(username).setIssuedAt(Date.from(Instant.now()))
-                    .setExpiration(Date.from(Instant.now().plusSeconds(JWS_DURATION)))
-                    .setHeaderParam(KEY_ID_PARAM, userId).signWith(publicKey).compact();
-
+            this.authorizedUsers.put(username, uuid);
             javaJwsToken.setJwsToken(jws);
             javaJwsToken.setJwsStatus(JwsStatus.CREATED);
         }
@@ -126,55 +116,36 @@ public class JavaJws implements IJavaJws {
     }
 
     @Override
-    public boolean abolishJws(final String userName, final String authString) {
-        if (userKeyMap.containsKey(userName)) {
-            if (decryptJws(userName, authString)) {
-                userKeyMap.remove(userName);
-                return true;
+    public JwsStatus abolishJws(final String userName, final String authString) {
+        if (this.authorizedUsers.containsKey(userName)) {
+            if (this.authorizeUser(authString).equals(userName)) {
+                this.authorizedUsers.remove(userName);
+                return JwsStatus.REMOVED;
+            } else {
+                return JwsStatus.UNAUTHORIZED;
             }
+        } else {
+            return JwsStatus.NO_SESSION;
         }
-        return false;
     }
 
     @Override
-    public boolean authorizeUser(final String authString, final UUID userUuid) {
+    public String authorizeUser(final String authString) {
         try {
-            PrivateKey key = null;
-            Iterator<Map.Entry<String, Map.Entry<UUID, PrivateKey>>> mapIterator =
-                    this.userKeyMap.entrySet().stream().iterator();
-            while(mapIterator.hasNext()) {
-                Map.Entry<UUID, PrivateKey> entry = mapIterator.next().getValue();
-                if (entry.getKey() == userUuid) {
-                    key = entry.getValue();
-                }
-            }
-            if (key == null) {
-                return false;
-            }
-             Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(authString);
-            return true;
+             Jws<Claims> claim = Jwts.parserBuilder().setSigningKey(this.privateKey)
+                     .requireIssuer(JWS_ISSUER).build().parseClaimsJws(authString);
+             String subject = claim.getBody().getSubject();
+             if (claim.getBody().getId().equals(this.authorizedUsers.get(subject))) {
+                 return subject;
+             } else {
+                 return "";
+             }
         } catch(JwtException ex) {
-            return false;
+            return "";
         }
     }
 
-    /**
-     * Decrypt jws and confirm that the subject and the user are the same.
-     *
-     * @param userName of the session owner.
-     * @param authString of the session owner.
-     * @return true is decryption is successful.
-     */
-    private boolean decryptJws(final String userName, final String authString) {
-        PrivateKey privateKey = this.userKeyMap.get(userName).getValue();
-        try {
-            Jwts.parserBuilder().setSigningKey(privateKey)
-                    .requireIssuer(JWS_ISSUER)
-                    .requireSubject(userName)
-                    .build().parseClaimsJws(authString);
-            return true;
-        } catch(JwtException ex) {
-            return false;
-        }
+    public boolean checkUserLoggedIn(final String username) {
+        return this.authorizedUsers.containsKey(username);
     }
 }

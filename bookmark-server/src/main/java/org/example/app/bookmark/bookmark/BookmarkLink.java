@@ -18,22 +18,13 @@ public class BookmarkLink {
     private String uriName;
 
     /**
-     * Create bookmark link object.
+     * Create BookmarkLink object from api model object.
      *
-     * @param uri     of the bookmark link.
-     * @param uriName name of the uri.
+     * @param apiBookmarkLink object received from the api model.
      */
-    public BookmarkLink(URI uri, String uriName) {
-        this.uri = uri;
-        this.uriName = uriName;
-    }
-
-    /**
-     * Create bookmark link object.
-     */
-    public BookmarkLink() {
-        this.uri = null;
-        this.uriName = "";
+    public BookmarkLink(com.ericsson.adp.bookmark_api.model.BookmarkLink apiBookmarkLink) {
+        this.setUriName(apiBookmarkLink.getName());
+        this.setUri(apiBookmarkLink.getUri());
     }
 
     /**

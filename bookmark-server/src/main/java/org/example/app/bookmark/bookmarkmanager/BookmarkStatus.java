@@ -35,7 +35,12 @@ public enum BookmarkStatus {
     /**
      * Signals that the user executing the operation was unauthorized.
      */
-    UNAUTHORIZED(7);
+    UNAUTHORIZED(7),
+
+    /**
+     * Signals correct execution of the task.
+     */
+    OK(8);
 
     /**
      * Field containing the status for the current instance.

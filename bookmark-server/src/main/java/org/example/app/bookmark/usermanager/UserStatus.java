@@ -33,7 +33,27 @@ public enum UserStatus {
     /**
      * Signals that the password for the user is invalid.
      */
-    INVALID_PASSWORD(6);
+    INVALID_PASSWORD(6),
+
+    /**
+     * Signals that the user is already logged in.
+     */
+    LOGGED_IN(7),
+
+    /**
+     * Signals that issue occurred during log-in.
+     */
+    LOGIN_ISSUE(8),
+
+    /**
+     * Signals that the password is too long.
+     */
+    PASSWORD_TOO_LONG(9),
+
+    /**
+     * Signals that the actor is not authorized.
+     */
+    UNAUTHORIZERD(10);
 
     /**
      * Field containing the status for the current instance.

@@ -1,11 +1,14 @@
 package org.example.app.bookmark.user;
 
 import com.ericsson.adp.bookmark_api.model.UserData;
+import org.example.app.bookmark.exceptions.BadParametersException;
 
 /**
  * Class defining User entity.
  */
 public class User {
+
+    public static final int MAXIMUM_PASSWORD_LENGTH = 1024;
 
     /**
      * Name of the user.
@@ -17,19 +20,14 @@ public class User {
      */
     private String password;
 
-    public User(String username, String password) {
-        this.username = username;
-        this.password = password;
-    }
-
     /**
      * Constructor that creates the user from the provided user data object.
      *
      * @param userData object containing user information.
      */
     public User(UserData userData) {
-        this.username = userData.getName();
-        this.password = userData.getPassword();
+        this.setUsername(userData.getName());
+        this.setPassword(userData.getPassword());
     }
 
     /**
@@ -65,6 +63,9 @@ public class User {
      * @param password to set for the user.
      */
     public void setPassword(String password) {
+        if (password.length() > MAXIMUM_PASSWORD_LENGTH) {
+            throw new BadParametersException("Password too long");
+        }
         this.password = password;
     }
 }

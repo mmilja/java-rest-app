@@ -99,6 +99,7 @@ public class Utils implements IUtils {
         ServletHolder servletHolder = contextHandler.addServlet(ServletContainer.class, pathMapping + "/*");
         servletHolder.setInitOrder(0);
         servletHolder.setInitParameter(ServletProperties.JAXRS_APPLICATION_CLASS, JerseyConfig.class.getCanonicalName());
+
         return server;
     }
 

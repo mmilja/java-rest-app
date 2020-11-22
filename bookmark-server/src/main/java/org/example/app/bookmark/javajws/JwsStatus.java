@@ -15,7 +15,22 @@ public enum JwsStatus {
     /**
      * Signals that the session already exists.
      */
-    ALREADY_EXISTS(3);
+    ALREADY_EXISTS(3),
+
+    /**
+     * Signals that the session removal was successful
+     */
+    REMOVED(4),
+
+    /**
+     * Signals that the authorization was incorrect.
+     */
+    UNAUTHORIZED(5),
+
+    /**
+     * Signals that there is no session associated.
+     */
+    NO_SESSION(6);
 
     /**
      * Field containing the status for the current instance.
