@@ -1,6 +1,7 @@
 package org.example.app.bookmark.rest;
 
-import com.ericsson.adp.bookmark_api.model.UserData;
+import org.example.app.bookmark_api.model.Message;
+import org.example.app.bookmark_api.model.UserData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.app.bookmark.usermanager.IUserManager;
@@ -57,25 +58,27 @@ public class UserHandler {
         UserStatus registrationStatus = this.userManager.registerUser(userData);
         LOGGER.info("Registering user attempt: " + userData.getName());
 
+        Message message = new Message();
         switch (registrationStatus) {
             case REGISTERED:
-                response = Response.status(Response.Status.CREATED)
-                        .entity("Successfully registered user: " + userData.getName()).build();
+                message.setMessage("Successfully registered user: " + userData.getName());
+                response = Response.status(Response.Status.CREATED).entity(message).build();
                 break;
             case USERNAME_EXISTS:
-                response = Response.status(Response.Status.NOT_ACCEPTABLE)
-                        .entity("Chosen username already exist: " + userData.getName()).build();
+                message.setMessage("Chosen username already exist: " + userData.getName());
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case INVALID_DATA:
-                response = Response.status(Response.Status.NO_CONTENT)
-                        .entity("Not enough information provided to create the user.").build();
+                message.setMessage("Not enough information provided to create the user.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case PASSWORD_TOO_LONG:
-                response = Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Provided password is too long.").build();
+                message.setMessage("Provided password is too long.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             default:
-                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(DEFAULT_MESSAGE).build();
+                message.setMessage(DEFAULT_MESSAGE);
+                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
                 break;
         }
 
@@ -92,34 +95,36 @@ public class UserHandler {
         Map.Entry<UserStatus, String> loginStatus = this.userManager.loginUser(userData);
         LOGGER.info("User login attempt: " + userData.getName());
 
+        Message message = new Message();
         switch (loginStatus.getKey()) {
             case OK:
-                response = Response.status(Response.Status.CREATED)
-                        .entity("Successfully logged-in user: " + userData.getName()
-                                + "\n Use the following string for authorization: " + loginStatus.getValue()).build();
+                message.setMessage("Successfully logged-in user: " + userData.getName()
+                        + "\n Use the following string for authorization: \n" + loginStatus.getValue());
+                response = Response.status(Response.Status.OK).entity(message).build();
                 break;
             case NOT_FOUND:
-                response = Response.status(Response.Status.NOT_ACCEPTABLE)
-                        .entity("User does not exist: " + userData.getName()).build();
+                message.setMessage("User does not exist: " + userData.getName());
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case INVALID_DATA:
-                response = Response.status(Response.Status.NO_CONTENT)
-                        .entity("Not enough information provided to log-in the user.").build();
+                message.setMessage("Not enough information provided to log-in the user.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case LOGIN_ISSUE:
-                response = Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Could not log in the user.").build();
+                message.setMessage("Could not log in the user.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case LOGGED_IN:
-                response = Response.status(Response.Status.BAD_REQUEST)
-                        .entity("User with that name is already logged in.").build();
+                message.setMessage("User with that name is already logged in.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case INVALID_PASSWORD:
-                response = Response.status(Response.Status.BAD_REQUEST)
-                        .entity("Provided password is invalid.").build();
+                message.setMessage("Provided password is invalid.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             default:
-                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(DEFAULT_MESSAGE).build();
+                message.setMessage(DEFAULT_MESSAGE);
+                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
                 break;
         }
         return response;
@@ -136,25 +141,27 @@ public class UserHandler {
         UserStatus logoutStatus = this.userManager.logoutUser(userName, authString);
         LOGGER.info("User logout attempt: " + userName);
 
+        Message message = new Message();
         switch (logoutStatus) {
             case OK:
-                response = Response.status(Response.Status.OK)
-                        .entity("Successfully logged-out user: " + userName).build();
+                message.setMessage("Successfully logged-out user: " + userName);
+                response = Response.status(Response.Status.OK).entity(message).build();
                 break;
             case NOT_FOUND:
-                response = Response.status(Response.Status.NOT_ACCEPTABLE)
-                        .entity("User does not exist: " + userName).build();
+                message.setMessage("User does not exist: " + userName);
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
             case INVALID_DATA:
-                response = Response.status(Response.Status.NO_CONTENT)
-                        .entity("Information to log out the user is not correct.").build();
+                message.setMessage("Information to log out the user is not correct.");
+                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
                 break;
-            case UNAUTHORIZERD:
-                response = Response.status(Response.Status.UNAUTHORIZED)
-                        .entity("Authorization information is not correct.").build();
+            case UNAUTHORIZED:
+                message.setMessage("Authorization information is not correct.");
+                response = Response.status(Response.Status.UNAUTHORIZED).entity(message).build();
                 break;
             default:
-                response = Response.status(Response.Status.NOT_FOUND).entity(DEFAULT_MESSAGE).build();
+                message.setMessage(DEFAULT_MESSAGE);
+                response = Response.status(Response.Status.INTERNAL_SERVER_ERROR).entity(message).build();
                 break;
         }
 

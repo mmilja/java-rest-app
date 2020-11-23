@@ -1,6 +1,6 @@
 package org.example.app.bookmark.bookmark;
 
-import com.ericsson.adp.bookmark_api.model.BookmarkAccess;
+import org.example.app.bookmark_api.model.BookmarkAccess;
 
 /**
  * Class defining the bookmark entity.
@@ -23,7 +23,7 @@ public class Bookmark {
      *
      * @param apiBookmark object received from the api model.
      */
-    public Bookmark(com.ericsson.adp.bookmark_api.model.Bookmark apiBookmark) {
+    public Bookmark(org.example.app.bookmark_api.model.Bookmark apiBookmark) {
         this.setPrivate(apiBookmark.getAccess() != null && apiBookmark.getAccess().equals(BookmarkAccess.PRIVATE));
         this.setBookmarkLink(new BookmarkLink(apiBookmark.getBookmarkLink()));
     }

@@ -1,7 +1,7 @@
 package org.example.app.bookmark.bookmarkmanager;
 
-import com.ericsson.adp.bookmark_api.model.Bookmark;
-import com.ericsson.adp.bookmark_api.model.BookmarkLink;
+import org.example.app.bookmark_api.model.Bookmark;
+import org.example.app.bookmark_api.model.BookmarkLink;
 
 import java.util.List;
 import java.util.Map;

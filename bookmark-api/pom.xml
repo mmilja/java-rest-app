@@ -93,7 +93,6 @@
             <artifactId>jackson-databind-nullable</artifactId>
             <version>${jackson-nullable.version}</version>
         </dependency>
-
     </dependencies>
 
     <build>
@@ -131,8 +130,8 @@
                             <configOptions>
                                 <sourceFolder>src/java/main/</sourceFolder>
                             </configOptions>
-                            <modelPackage>com.ericsson.adp.bookmark-api.model</modelPackage>
-                            <apiPackage>com.ericsson.adp.bookmark-api.client</apiPackage>
+                            <modelPackage>org.example.app.bookmark-api.model</modelPackage>
+                            <apiPackage>org.example.app.bookmark-api.client</apiPackage>
                             <configurationFile>${project.basedir}/src/main/resources/config/configuration.json
                             </configurationFile>
                         </configuration>

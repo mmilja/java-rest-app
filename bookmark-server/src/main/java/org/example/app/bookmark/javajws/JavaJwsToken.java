@@ -16,28 +16,6 @@ public class JavaJwsToken {
     private JwsStatus jwsStatus;
 
     /**
-     * Wraps jws token and status during creation of the token in a object.
-     *
-     * @param jwsToken created jws token.
-     * @param jwsStatus status of the creation of the jws token.
-     */
-    public JavaJwsToken(String jwsToken, JwsStatus jwsStatus) {
-        this.jwsToken = jwsToken;
-        this.jwsStatus = jwsStatus;
-    }
-
-    /**
-     * Wraps jws token and status during creation of the token in a object.
-     * Used when jws token was not created successfully.
-     *
-     * @param jwsStatus status of the creation of the jws token.
-     */
-    public JavaJwsToken(JwsStatus jwsStatus) {
-        this.jwsToken = "";
-        this.jwsStatus = jwsStatus;
-    }
-
-    /**
      * Default constructor.
      * Sets the status to failed.
      */

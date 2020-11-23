@@ -21,7 +21,7 @@ paths:
               $ref: '#/components/schemas/UserData'
         required: true
       responses:
-        '200':
+        '201':
           description: User registered
           content:
             application/json:
@@ -108,7 +108,7 @@ paths:
               $ref: '#/components/schemas/Bookmark'
         required: true
       responses:
-        '200':
+        '201':
           description: Bookmark successfully added
           content:
             application/json:
@@ -171,7 +171,7 @@ paths:
           content:
             application/problem+json:
               schema:
-                $ref: '#/components/schemas/Error'
+                $ref: '#/components/schemas/Message'
         '500':
           $ref: '#/components/responses/InternalServerError'
   '/bookmark/public':
@@ -187,6 +187,8 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/BookmarkLinks'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
         '500':
           $ref: '#/components/responses/InternalServerError'
 
@@ -202,19 +204,19 @@ components:
       content:
         application/json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Message'
     InternalServerError:
       description: Internal server error
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Message'
     BadRequestError:
       description: Invalid input parameters
       content:
         application/problem+json:
           schema:
-            $ref: '#/components/schemas/Error'
+            $ref: '#/components/schemas/Message'
   schemas:
     UserName:
       type: string
@@ -271,11 +273,4 @@ components:
       type: object
       properties:
         message:
-          type: string
-    Error:
-      type: object
-      properties:
-        summary:
-          type: string
-        cause:
           type: string

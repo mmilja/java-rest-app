@@ -53,7 +53,7 @@ public enum UserStatus {
     /**
      * Signals that the actor is not authorized.
      */
-    UNAUTHORIZERD(10);
+    UNAUTHORIZED(10);
 
     /**
      * Field containing the status for the current instance.

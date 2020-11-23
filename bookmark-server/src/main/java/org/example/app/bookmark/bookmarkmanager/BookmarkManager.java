@@ -1,7 +1,7 @@
 package org.example.app.bookmark.bookmarkmanager;
 
-import com.ericsson.adp.bookmark_api.model.BookmarkAccess;
-import com.ericsson.adp.bookmark_api.model.BookmarkLink;
+import org.example.app.bookmark_api.model.BookmarkAccess;
+import org.example.app.bookmark_api.model.BookmarkLink;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.app.bookmark.bookmark.Bookmark;
@@ -50,7 +50,7 @@ public final class BookmarkManager implements IBookmarkManager {
     /**
      * Set of all known public bookmarks.
      */
-    private Set<com.ericsson.adp.bookmark_api.model.BookmarkLink> publicBookmarks;
+    private Set<org.example.app.bookmark_api.model.BookmarkLink> publicBookmarks;
 
     /**
      * Private constructor.
@@ -94,7 +94,7 @@ public final class BookmarkManager implements IBookmarkManager {
     }
 
     @Override
-    public Map.Entry<BookmarkStatus, List<com.ericsson.adp.bookmark_api.model.Bookmark>>
+    public Map.Entry<BookmarkStatus, List<org.example.app.bookmark_api.model.Bookmark>>
     getBookmarks(final String authString) {
         String user = this.javaJws.authorizeUser(authString);
         if (!user.isEmpty()){
@@ -102,14 +102,14 @@ public final class BookmarkManager implements IBookmarkManager {
                 return new AbstractMap.SimpleEntry<>(BookmarkStatus.NOT_FOUND, null);
             }
             List<Bookmark> bookmarkList = this.userBookmarkMap.get(user);
-            List<com.ericsson.adp.bookmark_api.model.Bookmark> bookmarks = new ArrayList<>();
+            List<org.example.app.bookmark_api.model.Bookmark> bookmarks = new ArrayList<>();
             bookmarkList.forEach(bookmark -> {
                 BookmarkLink bookmarkLink = new BookmarkLink();
                 bookmarkLink.setUri(bookmark.getBookmarkLink().getUri());
                 bookmarkLink.setName(bookmark.getBookmarkLink().getUriName());
 
-                com.ericsson.adp.bookmark_api.model.Bookmark tmpBookmark =
-                        new com.ericsson.adp.bookmark_api.model.Bookmark();
+                org.example.app.bookmark_api.model.Bookmark tmpBookmark =
+                        new org.example.app.bookmark_api.model.Bookmark();
                 tmpBookmark.setBookmarkLink(bookmarkLink);
                 tmpBookmark.setAccess(bookmark.isPrivate() ? BookmarkAccess.PRIVATE: BookmarkAccess.PUBLIC);
                 bookmarks.add(tmpBookmark);
@@ -121,7 +121,7 @@ public final class BookmarkManager implements IBookmarkManager {
     }
 
     @Override
-    public BookmarkStatus addBookmark(final com.ericsson.adp.bookmark_api.model.Bookmark bookmark,
+    public BookmarkStatus addBookmark(final org.example.app.bookmark_api.model.Bookmark bookmark,
                                       final String authString) {
 
         String user = this.javaJws.authorizeUser(authString);
@@ -168,7 +168,7 @@ public final class BookmarkManager implements IBookmarkManager {
 
     @Override
     public BookmarkStatus updateBookmark( final String bookmarkName,
-            final com.ericsson.adp.bookmark_api.model.Bookmark bookmark, final String authString) {
+            final org.example.app.bookmark_api.model.Bookmark bookmark, final String authString) {
 
         String user = this.javaJws.authorizeUser(authString);
         if (!user.isEmpty()){

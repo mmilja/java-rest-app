@@ -1,6 +1,6 @@
 package org.example.app.bookmark.usermanager;
 
-import com.ericsson.adp.bookmark_api.model.UserData;
+import org.example.app.bookmark_api.model.UserData;
 
 import java.util.Map;
 

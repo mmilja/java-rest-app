@@ -1,7 +1,5 @@
 package org.example.app.bookmark.javajws;
 
-import java.util.UUID;
-
 /**
  * Interface describing JWT functions.
  */

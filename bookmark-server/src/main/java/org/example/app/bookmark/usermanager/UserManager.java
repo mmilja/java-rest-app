@@ -1,6 +1,6 @@
 package org.example.app.bookmark.usermanager;
 
-import com.ericsson.adp.bookmark_api.model.UserData;
+import org.example.app.bookmark_api.model.UserData;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.app.bookmark.exceptions.BadParametersException;
@@ -159,7 +159,7 @@ public class UserManager implements IUserManager {
             case REMOVED:
                 return UserStatus.OK;
             case UNAUTHORIZED:
-                return UserStatus.UNAUTHORIZERD;
+                return UserStatus.UNAUTHORIZED;
             case NO_SESSION:
                 return  UserStatus.NOT_FOUND;
             default:

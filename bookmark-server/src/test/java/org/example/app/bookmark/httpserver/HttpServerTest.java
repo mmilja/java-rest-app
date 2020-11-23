@@ -2,6 +2,7 @@ package org.example.app.bookmark.httpserver;
 
 import org.eclipse.jetty.server.Server;
 import org.example.app.bookmark.config.InternalConfig;
+import org.example.app.bookmark.testutils.TestUtils;
 import org.example.app.bookmark.utils.IUtils;
 import org.junit.After;
 import org.junit.Before;
@@ -9,6 +10,9 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TestName;
 
+import static org.example.app.bookmark.testutils.TestUtils.printTestFooter;
+import static org.example.app.bookmark.testutils.TestUtils.printTestHeader;
+import static org.example.app.bookmark.testutils.TestUtils.printTestInfo;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -36,10 +40,13 @@ public class HttpServerTest {
     internalConfig = new InternalConfig();
     internalConfig.setHttpPort(PORT);
     internalConfig.setRootApiPath("bookmark/");
+
+    printTestHeader(testName.getMethodName());
   }
 
   @After
   public void tearDown() {
+    printTestFooter();
   }
 
   @Test

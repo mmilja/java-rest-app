@@ -22,7 +22,7 @@ public class BookmarkLink {
      *
      * @param apiBookmarkLink object received from the api model.
      */
-    public BookmarkLink(com.ericsson.adp.bookmark_api.model.BookmarkLink apiBookmarkLink) {
+    public BookmarkLink(org.example.app.bookmark_api.model.BookmarkLink apiBookmarkLink) {
         this.setUriName(apiBookmarkLink.getName());
         this.setUri(apiBookmarkLink.getUri());
     }
