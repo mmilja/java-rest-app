@@ -48,6 +48,14 @@ public class UserHandler {
         this.userManager = userManager;
     }
 
+    /**
+     * Register a new user.
+     *
+     * @param userData with which a user will be registered.
+     * @return  CREATED if operation is successful.
+     *          BAD REQUEST if something went wrong during registration attempt.
+     *          INTERNAL SERVER ERROR in case of an error.
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -85,6 +93,14 @@ public class UserHandler {
         return response;
     }
 
+    /**
+     * Login a registrated user.
+     *
+     * @param userData of the user to login.
+     * @return  OK and jws token information is operation is successful.
+     *          BAD_REQUEST if something went wrong during login attempt.
+     *          INTERNAL_SERVER_ERROR in case of an error.
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -99,7 +115,7 @@ public class UserHandler {
         switch (loginStatus.getKey()) {
             case OK:
                 message.setMessage("Successfully logged-in user: " + userData.getName()
-                        + "\n Use the following string for authorization: \n" + loginStatus.getValue());
+                        + "\n Use the following string for authorization: " + loginStatus.getValue());
                 response = Response.status(Response.Status.OK).entity(message).build();
                 break;
             case NOT_FOUND:
@@ -130,6 +146,16 @@ public class UserHandler {
         return response;
     }
 
+    /**
+     * Log-out a logged in user.
+     *
+     * @param userName of the user to log-out.
+     * @param authString to authorize the user.
+     * @return  OK if operation is successful.
+     *          BAD_REQUEST if something went wrong during log-out attempt.
+     *          UNAUTHORIZED if authorization failed.
+     *          INTERNAL_SERVER_ERROR in case of an error.
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)

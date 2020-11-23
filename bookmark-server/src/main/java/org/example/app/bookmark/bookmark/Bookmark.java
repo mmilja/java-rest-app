@@ -1,11 +1,17 @@
 package org.example.app.bookmark.bookmark;
 
+import org.example.app.bookmark.exceptions.BadParametersException;
 import org.example.app.bookmark_api.model.BookmarkAccess;
 
 /**
  * Class defining the bookmark entity.
  */
 public class Bookmark {
+
+    /**
+     * MEssage indicating that bad bookmark link was provided.
+     */
+    public static final String BAD_BOOKMARK_LINK = "Bad bookmark link provided";
 
     /**
      * Object containing the name and the location of the bookmark link.
@@ -24,6 +30,10 @@ public class Bookmark {
      * @param apiBookmark object received from the api model.
      */
     public Bookmark(org.example.app.bookmark_api.model.Bookmark apiBookmark) {
+        if (apiBookmark.getBookmarkLink() == null) {
+            throw new BadParametersException(BAD_BOOKMARK_LINK);
+        }
+
         this.setPrivate(apiBookmark.getAccess() != null && apiBookmark.getAccess().equals(BookmarkAccess.PRIVATE));
         this.setBookmarkLink(new BookmarkLink(apiBookmark.getBookmarkLink()));
     }

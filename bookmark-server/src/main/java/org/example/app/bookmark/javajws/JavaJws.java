@@ -6,25 +6,16 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.example.app.bookmark.utils.IUtils;
 
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
+import javax.crypto.SecretKey;
 import java.sql.Date;
 import java.time.Instant;
+import java.util.AbstractMap;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
 public class JavaJws implements IJavaJws {
-
-    /**
-     * Logger for the class.
-     */
-    private static final Logger LOGGER = LogManager.getLogger(JavaJws.class.getSimpleName());
 
     /**
      * Name of the jws token issuer.
@@ -37,60 +28,34 @@ public class JavaJws implements IJavaJws {
     private static volatile JavaJws instance;
 
     /**
-     * Object containing utility methods.
-     */
-    private final IUtils utils;
-
-    /**
      * Map containing a user and a private key associated with that user.
      * Contains a list of active sessions.
      */
     private final Map<String, String> authorizedUsers;
 
     /**
-     * Private key used to verify the jws signature.
+     * Secret key used to verify and sign the jws signature.
      */
-    private final PrivateKey privateKey;
-
-    /**
-     * Public key used to sign the jws.
-     */
-    private final PublicKey publicKey;
+    private final SecretKey secretKey;
 
     /**
      * Private constructor.
-     *
-     * @param utils object containing utility methods.
      */
-    private JavaJws(final IUtils utils) {
-        this.utils = utils;
-
+    private JavaJws() {
         this.authorizedUsers = new HashMap<>();
-        KeyPair keyPair = Keys.keyPairFor(SignatureAlgorithm.RS256);
-        this.privateKey = keyPair.getPrivate();
-        this.publicKey = keyPair.getPublic();
-    }
-
-    /**
-     * Convenience getter.
-     *
-     * @return IBookmarkManager instance.
-     */
-    public static IJavaJws getInstance() {
-        return instance;
+        this.secretKey = Keys.secretKeyFor(SignatureAlgorithm.HS512);
     }
 
     /**
      * Getter for the singleton.
      *
-     * @param utils object containing utility methods.
      * @return IRESTManager instance.
      */
-    public static IJavaJws getInstance(final IUtils utils) {
+    public static IJavaJws getInstance() {
         if (instance == null) {
             synchronized (JavaJws.class) {
                 if (instance == null) {
-                    instance = new JavaJws(utils);
+                    instance = new JavaJws();
                 }
             }
         }
@@ -98,21 +63,17 @@ public class JavaJws implements IJavaJws {
     }
 
     @Override
-    public JavaJwsToken createJws(final String username) {
-        JavaJwsToken javaJwsToken = new JavaJwsToken();
-
+    public Map.Entry<JwsStatus, String> createJws(final String username) {
         if (this.authorizedUsers.containsKey(username)) {
-            javaJwsToken.setJwsStatus(JwsStatus.ALREADY_EXISTS);
+            return new AbstractMap.SimpleEntry<>(JwsStatus.ALREADY_EXISTS, "");
         } else {
             String uuid = UUID.randomUUID().toString();
             String jws = Jwts.builder().setIssuer(JWS_ISSUER).setSubject(username).setId(uuid)
-                    .setIssuedAt(Date.from(Instant.now())).signWith(privateKey).compact();
+                    .setIssuedAt(Date.from(Instant.now())).signWith(this.secretKey).compact();
 
             this.authorizedUsers.put(username, uuid);
-            javaJwsToken.setJwsToken(jws);
-            javaJwsToken.setJwsStatus(JwsStatus.CREATED);
+            return new AbstractMap.SimpleEntry<>(JwsStatus.CREATED, jws);
         }
-        return  javaJwsToken;
     }
 
     @Override
@@ -131,20 +92,24 @@ public class JavaJws implements IJavaJws {
 
     @Override
     public String authorizeUser(final String authString) {
+        if (authString == null || authString.isEmpty()) {
+            return "";
+        }
         try {
-             Jws<Claims> claim = Jwts.parserBuilder().setSigningKey(this.privateKey)
-                     .requireIssuer(JWS_ISSUER).build().parseClaimsJws(authString);
-             String subject = claim.getBody().getSubject();
-             if (claim.getBody().getId().equals(this.authorizedUsers.get(subject))) {
-                 return subject;
-             } else {
-                 return "";
-             }
-        } catch(JwtException ex) {
+            Jws<Claims> claim = Jwts.parserBuilder().setSigningKey(this.secretKey)
+                    .requireIssuer(JWS_ISSUER).build().parseClaimsJws(authString);
+            String subject = claim.getBody().getSubject();
+            if (claim.getBody().getId().equals(this.authorizedUsers.get(subject))) {
+                return subject;
+            } else {
+                return "";
+            }
+        } catch (JwtException ex) {
             return "";
         }
     }
 
+    @Override
     public boolean checkUserLoggedIn(final String username) {
         return this.authorizedUsers.containsKey(username);
     }

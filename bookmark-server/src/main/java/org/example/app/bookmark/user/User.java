@@ -8,7 +8,20 @@ import org.example.app.bookmark.exceptions.BadParametersException;
  */
 public class User {
 
+    /**
+     * Maximum length of the password.
+     */
     public static final int MAXIMUM_PASSWORD_LENGTH = 1024;
+
+    /**
+     * Message indicating that user password is too long.
+     */
+    public static final String PASSWORD_TOO_LONG = "Password too long";
+
+    /**
+     * Message indicating bad user data was provided.
+     */
+    public static final String BAD_DATA = "Bad user data provided";
 
     /**
      * Name of the user.
@@ -26,6 +39,9 @@ public class User {
      * @param userData object containing user information.
      */
     public User(UserData userData) {
+        if (userData.getName() == null || userData.getPassword() == null) {
+            throw new BadParametersException(BAD_DATA);
+        }
         this.setUsername(userData.getName());
         this.setPassword(userData.getPassword());
     }
@@ -64,7 +80,7 @@ public class User {
      */
     public void setPassword(String password) {
         if (password.length() > MAXIMUM_PASSWORD_LENGTH) {
-            throw new BadParametersException("Password too long");
+            throw new BadParametersException(PASSWORD_TOO_LONG);
         }
         this.password = password;
     }

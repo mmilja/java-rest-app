@@ -1,5 +1,7 @@
 package org.example.app.bookmark.bookmark;
 
+import org.example.app.bookmark.exceptions.BadParametersException;
+
 import java.net.URI;
 
 /**
@@ -23,6 +25,10 @@ public class BookmarkLink {
      * @param apiBookmarkLink object received from the api model.
      */
     public BookmarkLink(org.example.app.bookmark_api.model.BookmarkLink apiBookmarkLink) {
+        if (apiBookmarkLink.getName() == null || apiBookmarkLink.getUri() == null) {
+            throw new BadParametersException(Bookmark.BAD_BOOKMARK_LINK);
+        }
+
         this.setUriName(apiBookmarkLink.getName());
         this.setUri(apiBookmarkLink.getUri());
     }

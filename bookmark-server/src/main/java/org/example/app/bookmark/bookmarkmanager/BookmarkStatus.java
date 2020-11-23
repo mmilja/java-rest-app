@@ -3,14 +3,14 @@ package org.example.app.bookmark.bookmarkmanager;
 public enum BookmarkStatus {
 
     /**
-     * Signals the CREATED status.
+     * Signals correct execution of the task.
      */
-    CREATED(1),
+    OK(1),
 
     /**
-     * Signals that the specified bookmark cannot be found.
+     * Signals the CREATED status.
      */
-    NOT_FOUND(2),
+    CREATED(2),
 
     /**
      * Signals the successful registration of the user.
@@ -23,24 +23,24 @@ public enum BookmarkStatus {
     UPDATED(4),
 
     /**
+     * Signals that the specified bookmark cannot be found.
+     */
+    NOT_FOUND(5),
+
+    /**
      * Signals that the bookmark already exists.
      */
-    BOOKMARK_EXISTS(5),
+    BOOKMARK_EXISTS(6),
 
     /**
      * Signals that the data provided to register the bookmark is invalid.
      */
-    INVALID_DATA(6),
+    INVALID_DATA(7),
 
     /**
      * Signals that the user executing the operation was unauthorized.
      */
-    UNAUTHORIZED(7),
-
-    /**
-     * Signals correct execution of the task.
-     */
-    OK(8);
+    UNAUTHORIZED(8);
 
     /**
      * Field containing the status for the current instance.

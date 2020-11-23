@@ -16,6 +16,8 @@ public class InternalConfig {
     private int httpPort;
 
     /**
+     * Getter for the rootApiPath.
+     *
      * @return root REST API path
      */
     public final String getRootApiPath() {
@@ -23,6 +25,8 @@ public class InternalConfig {
     }
 
     /**
+     * Setter for the rootApiPath.
+     *
      * @param rootApiPath root REST API path
      */
     public final void setRootApiPath(final String rootApiPath) {
@@ -30,6 +34,8 @@ public class InternalConfig {
     }
 
     /**
+     * Getter for httpPort.
+     *
      * @return port used by the embedded HTTP server.
      */
     public final int getHttpPort() {
@@ -37,6 +43,8 @@ public class InternalConfig {
     }
 
     /**
+     * Setter for httpPort.
+     *
      * @param httpPort set value.
      */
     public final void setHttpPort(final int httpPort) {

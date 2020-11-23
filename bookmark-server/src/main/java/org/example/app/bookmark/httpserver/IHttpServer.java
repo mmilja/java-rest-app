@@ -15,6 +15,8 @@ public interface IHttpServer extends Closeable {
     boolean start();
 
     /**
+     * Checks if the HTTP server is running.
+     *
      * @return if server is running, false otherwise.
      */
     boolean isServerRunning();

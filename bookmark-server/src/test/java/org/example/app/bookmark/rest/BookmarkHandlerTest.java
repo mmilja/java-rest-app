@@ -59,21 +59,6 @@ public class BookmarkHandlerTest {
     }
 
     @Test
-    public void testGetBookmarkInvalidData() {
-        String authString = "authString";
-        List<Bookmark> bookmarkList = new ArrayList<>();
-        Map.Entry<BookmarkStatus, List<Bookmark>> entry = new AbstractMap.SimpleEntry<>(BookmarkStatus.INVALID_DATA, bookmarkList);
-
-        when(bookmarkManager.getBookmarks(authString)).thenReturn(entry);
-
-        printTestInfo("Getting user bookmarks");
-        BookmarkHandler bookmarkHandler = new BookmarkHandler(bookmarkManager);
-        Response getResponse = bookmarkHandler.getBookmark(authString);
-        assertEquals("Get operation should be invalid",
-                getResponse.getStatus(), Response.Status.BAD_REQUEST.getStatusCode());
-    }
-
-    @Test
     public void testGetBookmarkUnauthorized() {
         String authString = "authString";
         List<Bookmark> bookmarkList = new ArrayList<>();

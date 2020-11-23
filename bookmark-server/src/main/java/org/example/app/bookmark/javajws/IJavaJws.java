@@ -1,5 +1,7 @@
 package org.example.app.bookmark.javajws;
 
+import java.util.Map;
+
 /**
  * Interface describing JWT functions.
  */
@@ -11,7 +13,7 @@ public interface IJavaJws {
      * @param username for which to create jws.
      * @return object containing the status of creation and the jws.
      */
-    JavaJwsToken createJws(String username);
+    Map.Entry<JwsStatus, String> createJws(String username);
 
     /**
      * Abolish existing user session.

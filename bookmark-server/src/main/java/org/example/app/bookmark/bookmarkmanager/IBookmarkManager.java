@@ -25,7 +25,7 @@ public interface IBookmarkManager {
     /**
      * Add bookmark to the list of bookmarks for the user.
      *
-     * @param bookmark to add.
+     * @param bookmark   to add.
      * @param authString to authorize the user.
      * @return status code signaling the success or failure of the operation.
      */
@@ -35,7 +35,7 @@ public interface IBookmarkManager {
      * Add bookmark to the list of bookmarks for the user.
      *
      * @param bookmarkName to delete.
-     * @param authString to authorize the user.
+     * @param authString   to authorize the user.
      * @return status code signaling the success or failure of the operation.
      */
     BookmarkStatus deleteBookmark(final String bookmarkName, final String authString);
@@ -44,8 +44,8 @@ public interface IBookmarkManager {
      * Add bookmark to the list of bookmarks for the user.
      *
      * @param bookmarkName to delete.
-     * @param bookmark object containing the updated fields.
-     * @param authString to authorize the user.
+     * @param bookmark     object containing the updated fields.
+     * @param authString   to authorize the user.
      * @return status code signaling the success or failure of the operation.
      */
     BookmarkStatus updateBookmark(final String bookmarkName, final Bookmark bookmark, final String authString);
@@ -55,7 +55,7 @@ public interface IBookmarkManager {
      *
      * @param authString to authorize the user.
      * @return status code signaling the success or failure of the operation
-     *          and a list of all public bookmarks if successful.
+     *         and a list of all public bookmarks if successful.
      */
     Map.Entry<BookmarkStatus, Set<BookmarkLink>>
     getPublicBookmarks(final String authString);

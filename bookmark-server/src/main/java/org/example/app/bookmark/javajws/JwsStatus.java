@@ -8,29 +8,24 @@ public enum JwsStatus {
     CREATED(1),
 
     /**
-     * Signals an unspecified error.
-     */
-    FAILED(2),
-
-    /**
      * Signals that the session already exists.
      */
-    ALREADY_EXISTS(3),
+    ALREADY_EXISTS(2),
 
     /**
-     * Signals that the session removal was successful
+     * Signals that the session removal was successful.
      */
-    REMOVED(4),
+    REMOVED(3),
 
     /**
      * Signals that the authorization was incorrect.
      */
-    UNAUTHORIZED(5),
+    UNAUTHORIZED(4),
 
     /**
      * Signals that there is no session associated.
      */
-    NO_SESSION(6);
+    NO_SESSION(5);
 
     /**
      * Field containing the status for the current instance.

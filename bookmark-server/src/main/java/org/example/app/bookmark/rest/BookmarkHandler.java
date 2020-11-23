@@ -55,6 +55,15 @@ public class BookmarkHandler {
         this.bookmarkManager = bookmarkManager;
     }
 
+    /**
+     * Get all bookmarks for associated user.
+     *
+     * @param authString to authorize the user.
+     * @return  OK and list of associated bookmarks if operation is successful.
+     *          NO_CONTENT if no bookmarks are associated with the user.
+     *          UNAUTHORIZED if authorization failed.
+     *          INTERNAL SERVER ERROR in case of an error.
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/bookmark")
@@ -69,10 +78,6 @@ public class BookmarkHandler {
             case OK:
                 response = Response.status(Response.Status.OK).entity(getStatus.getValue()).build();
                 break;
-            case INVALID_DATA:
-                message.setMessage("Not enough information provided to get the bookmarks.");
-                response = Response.status(Response.Status.BAD_REQUEST).entity(message).build();
-                break;
             case UNAUTHORIZED:
                 message.setMessage("Authorization information is not correct");
                 response = Response.status(Response.Status.UNAUTHORIZED).entity(message).build();
@@ -86,6 +91,17 @@ public class BookmarkHandler {
         return response;
     }
 
+    /**
+     * Add bookmark to user bookmark collection.
+     *
+     * @param bookmark to add.
+     * @param authString to authorize the user.
+     * @return  CREATED if operation is successful.
+     *          BAD_REQUEST if a bookmarks with the same name already exists for the user,
+     *              or information provided is not valid.
+     *          UNAUTHORIZED if authorization failed.
+     *          INTERNAL SERVER ERROR in case of an error.
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -123,6 +139,17 @@ public class BookmarkHandler {
         return response;
     }
 
+    /**
+     * Update existing bookmark with new information.
+     *
+     * @param bookmark info with which to update the existing bookmark.
+     * @param bookmarkName of the bookmark that will be updated.
+     * @param authString to authorize the user.
+     * @return OK if operation is successful.
+     *         BAD_REQUEST if information provided is not valid.
+     *         UNAUTHORIZED if authorization failed.
+     *         INTERNAL SERVER ERROR in case of an error.
+     */
     @POST
     @Consumes(MediaType.APPLICATION_JSON)
     @Produces(MediaType.APPLICATION_JSON)
@@ -160,6 +187,16 @@ public class BookmarkHandler {
         return response;
     }
 
+    /**
+     * Delete existing bookmark.
+     *
+     * @param bookmarkName of the bookmark to delete.
+     * @param authString to authorize the user.
+     * @return OK if operation is successful.
+     *         NOT_FOUND if information provided is not valid.
+     *         UNAUTHORIZED if authorization failed.
+     *         INTERNAL SERVER ERROR in case of an error.
+     */
     @DELETE
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/bookmark/{bookmarkName}")
@@ -193,6 +230,14 @@ public class BookmarkHandler {
         return response;
     }
 
+    /**
+     * Get all public bookmarks available, from every user.
+     *
+     * @param authString to authorize the user.
+     * @return OK and a list of all public bookmarks if operation is successful.
+     *        UNAUTHORIZED if authorization failed.
+     *        INTERNAL SERVER ERROR in case of an error.
+     */
     @GET
     @Produces(MediaType.APPLICATION_JSON)
     @Path("/bookmark/public")

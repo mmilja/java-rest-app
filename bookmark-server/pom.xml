@@ -179,7 +179,7 @@
                     <configLocation>${project.parent.basedir}/mvn-resources/checkstyle/checkstyle.xml</configLocation>
                     <encoding>UTF-8</encoding>
                     <consoleOutput>true</consoleOutput>
-                    <failOnViolation>false</failOnViolation>
+                    <failOnViolation>true</failOnViolation>
                     <linkXRef>false</linkXRef>
                     <excludes>**/generated/**/*</excludes>
                 </configuration>
@@ -232,7 +232,7 @@
                 </dependencies>
                 <configuration>
                     <effort>Max</effort>
-                    <failOnError>false</failOnError>
+                    <failOnError>true</failOnError>
                     <excludeFilterFile>${project.parent.basedir}/mvn-resources/spotbugs/spotbugs-exclude.xml
                     </excludeFilterFile>
                     <threshold>Low</threshold>

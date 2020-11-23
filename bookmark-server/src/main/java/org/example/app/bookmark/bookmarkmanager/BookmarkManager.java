@@ -1,12 +1,10 @@
 package org.example.app.bookmark.bookmarkmanager;
 
+import org.example.app.bookmark.bookmark.Bookmark;
+import org.example.app.bookmark.exceptions.BadParametersException;
+import org.example.app.bookmark.javajws.IJavaJws;
 import org.example.app.bookmark_api.model.BookmarkAccess;
 import org.example.app.bookmark_api.model.BookmarkLink;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
-import org.example.app.bookmark.bookmark.Bookmark;
-import org.example.app.bookmark.javajws.IJavaJws;
-import org.example.app.bookmark.utils.IUtils;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -23,19 +21,9 @@ import java.util.Set;
 public final class BookmarkManager implements IBookmarkManager {
 
     /**
-     * Logger for the class.
-     */
-    private static final Logger LOGGER = LogManager.getLogger(BookmarkManager.class.getSimpleName());
-
-    /**
      * Singleton instance.
      */
     private static volatile BookmarkManager instance;
-
-    /**
-     * Object containing utility methods.
-     */
-    private final IUtils utils;
 
     /**
      * Object used for jws token creation.
@@ -50,16 +38,14 @@ public final class BookmarkManager implements IBookmarkManager {
     /**
      * Set of all known public bookmarks.
      */
-    private Set<org.example.app.bookmark_api.model.BookmarkLink> publicBookmarks;
+    private Set<BookmarkLink> publicBookmarks;
 
     /**
      * Private constructor.
      *
-     * @param utils object containing utility methods.
      * @param javaJws object used for jws token management.
      */
-    private BookmarkManager(final IUtils utils, final IJavaJws javaJws) {
-        this.utils = utils;
+    private BookmarkManager(final IJavaJws javaJws) {
         this.javaJws = javaJws;
 
         this.userBookmarkMap = new HashMap<>();
@@ -78,15 +64,14 @@ public final class BookmarkManager implements IBookmarkManager {
     /**
      * Getter for the singleton.
      *
-     * @param utils object containing utility methods.
      * @param javaJws object used for jws token management.
      * @return IBookmarkManager instance.
      */
-    public static IBookmarkManager getInstance(final IUtils utils, final IJavaJws javaJws) {
+    public static IBookmarkManager getInstance(final IJavaJws javaJws) {
         if (instance == null) {
             synchronized (BookmarkManager.class) {
                 if (instance == null) {
-                    instance = new BookmarkManager(utils, javaJws);
+                    instance = new BookmarkManager(javaJws);
                 }
             }
         }
@@ -97,9 +82,9 @@ public final class BookmarkManager implements IBookmarkManager {
     public Map.Entry<BookmarkStatus, List<org.example.app.bookmark_api.model.Bookmark>>
     getBookmarks(final String authString) {
         String user = this.javaJws.authorizeUser(authString);
-        if (!user.isEmpty()){
+        if (!user.isEmpty()) {
             if (!this.userBookmarkMap.containsKey(user)) {
-                return new AbstractMap.SimpleEntry<>(BookmarkStatus.NOT_FOUND, null);
+                return new AbstractMap.SimpleEntry<>(BookmarkStatus.OK, new ArrayList<>());
             }
             List<Bookmark> bookmarkList = this.userBookmarkMap.get(user);
             List<org.example.app.bookmark_api.model.Bookmark> bookmarks = new ArrayList<>();
@@ -111,7 +96,7 @@ public final class BookmarkManager implements IBookmarkManager {
                 org.example.app.bookmark_api.model.Bookmark tmpBookmark =
                         new org.example.app.bookmark_api.model.Bookmark();
                 tmpBookmark.setBookmarkLink(bookmarkLink);
-                tmpBookmark.setAccess(bookmark.isPrivate() ? BookmarkAccess.PRIVATE: BookmarkAccess.PUBLIC);
+                tmpBookmark.setAccess(bookmark.isPrivate() ? BookmarkAccess.PRIVATE : BookmarkAccess.PUBLIC);
                 bookmarks.add(tmpBookmark);
             });
             return new AbstractMap.SimpleEntry<>(BookmarkStatus.OK, bookmarks);
@@ -122,10 +107,10 @@ public final class BookmarkManager implements IBookmarkManager {
 
     @Override
     public BookmarkStatus addBookmark(final org.example.app.bookmark_api.model.Bookmark bookmark,
-                                      final String authString) {
+            final String authString) {
 
         String user = this.javaJws.authorizeUser(authString);
-        if (!user.isEmpty()){
+        if (!user.isEmpty()) {
             if (!this.userBookmarkMap.containsKey(user)) {
                 this.userBookmarkMap.put(user, new ArrayList<>());
             }
@@ -134,9 +119,13 @@ public final class BookmarkManager implements IBookmarkManager {
                     tmpBookmark.getBookmarkLink().getUriName().equals(bookmark.getBookmarkLink().getName()))) {
                 return BookmarkStatus.BOOKMARK_EXISTS;
             } else {
-                bookmarkList.add(new Bookmark(bookmark));
-                this.userBookmarkMap.put(user, bookmarkList);
-                return BookmarkStatus.CREATED;
+                try {
+                    bookmarkList.add(new Bookmark(bookmark));
+                    this.userBookmarkMap.put(user, bookmarkList);
+                    return BookmarkStatus.CREATED;
+                } catch (BadParametersException e) {
+                    return BookmarkStatus.INVALID_DATA;
+                }
             }
         } else {
             return BookmarkStatus.UNAUTHORIZED;
@@ -146,7 +135,7 @@ public final class BookmarkManager implements IBookmarkManager {
     @Override
     public BookmarkStatus deleteBookmark(final String bookmarkName, final String authString) {
         String user = this.javaJws.authorizeUser(authString);
-        if (!user.isEmpty()){
+        if (!user.isEmpty()) {
             if (!this.userBookmarkMap.containsKey(user)) {
                 return BookmarkStatus.NOT_FOUND;
             }
@@ -167,11 +156,12 @@ public final class BookmarkManager implements IBookmarkManager {
     }
 
     @Override
-    public BookmarkStatus updateBookmark( final String bookmarkName,
-            final org.example.app.bookmark_api.model.Bookmark bookmark, final String authString) {
+    public BookmarkStatus updateBookmark(final String bookmarkName,
+            final org.example.app.bookmark_api.model.Bookmark bookmark,
+            final String authString) {
 
         String user = this.javaJws.authorizeUser(authString);
-        if (!user.isEmpty()){
+        if (!user.isEmpty()) {
             if (!this.userBookmarkMap.containsKey(user)) {
                 return BookmarkStatus.NOT_FOUND;
             }
@@ -180,10 +170,16 @@ public final class BookmarkManager implements IBookmarkManager {
             Optional<Bookmark> bookmarkOptional = bookmarkList.stream().filter(
                     tmpBookamrk -> tmpBookamrk.getBookmarkLink().getUriName().equals(bookmarkName)).findFirst();
             if (bookmarkOptional.isPresent()) {
-                bookmarkList.remove(bookmarkOptional.get());
-                bookmarkList.add(new Bookmark(bookmark));
-                this.userBookmarkMap.put(user, bookmarkList);
-                return BookmarkStatus.UPDATED;
+                try {
+                    bookmarkList.remove(bookmarkOptional.get());
+                    bookmarkList.add(new Bookmark(bookmark));
+                    this.userBookmarkMap.put(user, bookmarkList);
+                    return BookmarkStatus.UPDATED;
+                } catch (BadParametersException e) {
+                    bookmarkList.add(bookmarkOptional.get());
+                    return BookmarkStatus.INVALID_DATA;
+                }
+
             } else {
                 return BookmarkStatus.INVALID_DATA;
             }
@@ -193,8 +189,7 @@ public final class BookmarkManager implements IBookmarkManager {
     }
 
     @Override
-    public Map.Entry<BookmarkStatus, Set<BookmarkLink>>
-    getPublicBookmarks(final String authString) {
+    public Map.Entry<BookmarkStatus, Set<BookmarkLink>> getPublicBookmarks(final String authString) {
         if (!this.javaJws.authorizeUser(authString).isEmpty()) {
             this.createPublicBookmarkSet();
             return new AbstractMap.SimpleEntry<>(BookmarkStatus.OK, this.publicBookmarks);
@@ -207,7 +202,7 @@ public final class BookmarkManager implements IBookmarkManager {
      */
     private void createPublicBookmarkSet() {
         publicBookmarks = new HashSet<>();
-        this.userBookmarkMap.forEach((uuid, bookmarks) -> bookmarks.forEach( bookmark -> {
+        this.userBookmarkMap.forEach((uuid, bookmarks) -> bookmarks.forEach(bookmark -> {
             if (!bookmark.isPrivate()) {
                 BookmarkLink bookmarkLink = new BookmarkLink();
                 bookmarkLink.setName(bookmark.getBookmarkLink().getUriName());

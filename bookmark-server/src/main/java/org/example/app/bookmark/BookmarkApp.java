@@ -4,7 +4,6 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.example.app.bookmark.bookmarkmanager.BookmarkManager;
 import org.example.app.bookmark.config.InternalConfig;
-import org.example.app.bookmark.exceptions.InitFailedException;
 import org.example.app.bookmark.httpserver.HttpServer;
 import org.example.app.bookmark.javajws.IJavaJws;
 import org.example.app.bookmark.javajws.JavaJws;
@@ -43,21 +42,14 @@ public class BookmarkApp {
         Utils utils = new Utils();
         InternalConfig internalConfig;
 
-        LOGGER.info("Reading data from the environment and the configuration files");
-        try {
+        internalConfig = new InternalConfig();
+        internalConfig.setHttpPort(8080);
+        internalConfig.setRootApiPath("/management");
 
-            internalConfig = new InternalConfig();
-            internalConfig.setHttpPort(8080);
-            internalConfig.setRootApiPath("/management");
+        IJavaJws javaJws = JavaJws.getInstance();
+        UserManager.getInstance(javaJws);
+        BookmarkManager.getInstance(javaJws);
 
-            IJavaJws javaJws = JavaJws.getInstance(utils);
-            UserManager.getInstance(utils, javaJws);
-            BookmarkManager.getInstance(utils, javaJws);
-        } catch (InitFailedException exception) {
-            LOGGER.error(exception, exception.getCause());
-            System.exit(BookmarkApp.ERROR_EXIT_CODE);
-            return;
-        }
         try (HttpServer httpServer = new HttpServer(internalConfig, utils)) {
             httpServer.start();
             LOGGER.info("HTTP server started..");

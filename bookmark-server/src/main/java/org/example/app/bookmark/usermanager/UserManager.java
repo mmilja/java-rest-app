@@ -1,14 +1,10 @@
 package org.example.app.bookmark.usermanager;
 
-import org.example.app.bookmark_api.model.UserData;
-import org.apache.logging.log4j.LogManager;
-import org.apache.logging.log4j.Logger;
 import org.example.app.bookmark.exceptions.BadParametersException;
 import org.example.app.bookmark.javajws.IJavaJws;
-import org.example.app.bookmark.javajws.JavaJwsToken;
 import org.example.app.bookmark.javajws.JwsStatus;
 import org.example.app.bookmark.user.User;
-import org.example.app.bookmark.utils.IUtils;
+import org.example.app.bookmark_api.model.UserData;
 
 import java.util.AbstractMap;
 import java.util.ArrayList;
@@ -22,20 +18,9 @@ import java.util.Optional;
 public class UserManager implements IUserManager {
 
     /**
-     * Logger for the class.
-     */
-    private static final Logger LOGGER = LogManager.getLogger(UserManager.class.getSimpleName());
-
-
-    /**
      * Singleton instance.
      */
     private static volatile UserManager instance;
-
-    /**
-     * Object containing utility methods.
-     */
-    private final IUtils utils;
 
     /**
      * Object used for jws token creation.
@@ -50,11 +35,9 @@ public class UserManager implements IUserManager {
     /**
      * Private constructor.
      *
-     * @param utils object containing utility methods.
      * @param javaJws object used for jws token management.
      */
-    private UserManager(final IUtils utils, final IJavaJws javaJws) {
-        this.utils = utils;
+    private UserManager(final IJavaJws javaJws) {
         this.javaJws = javaJws;
 
         this.userList = new ArrayList<>();
@@ -72,15 +55,14 @@ public class UserManager implements IUserManager {
     /**
      * Getter for the singleton.
      *
-     * @param utils object containing utility methods.
      * @param javaJws object used for jws token management.
      * @return IUserManager instance.
      */
-    public static IUserManager getInstance(final IUtils utils, final IJavaJws javaJws) {
+    public static IUserManager getInstance(final IJavaJws javaJws) {
         if (instance == null) {
             synchronized (UserManager.class) {
                 if (instance == null) {
-                    instance = new UserManager(utils, javaJws);
+                    instance = new UserManager(javaJws);
                 }
             }
         }
@@ -89,7 +71,8 @@ public class UserManager implements IUserManager {
 
     @Override
     public UserStatus registerUser(final UserData userData) {
-        if (userData.getName().isEmpty() || userData.getPassword().isEmpty()) {
+        if (userData.getName() == null || userData.getName().isEmpty()
+                || userData.getPassword() == null || userData.getPassword().isEmpty()) {
             return UserStatus.INVALID_DATA;
         }
 
@@ -99,14 +82,16 @@ public class UserManager implements IUserManager {
 
         User user;
         try {
-         user = new User(userData);
+            user = new User(userData);
         } catch (BadParametersException e) {
-            return UserStatus.PASSWORD_TOO_LONG;
+            if (e.getMessage().equals(User.PASSWORD_TOO_LONG)) {
+                return UserStatus.PASSWORD_TOO_LONG;
+            } else {
+                return UserStatus.INVALID_DATA;
+            }
         }
 
         this.userList.add(user);
-
-        LOGGER.info("User list: {}", (long) this.userList.size());
 
         return UserStatus.REGISTERED;
     }
@@ -114,7 +99,8 @@ public class UserManager implements IUserManager {
     @Override
     public Map.Entry<UserStatus, String> loginUser(final UserData userData) {
         String jws = "";
-        if (userData.getName().isEmpty() || userData.getPassword().isEmpty()) {
+        if (userData.getName() == null || userData.getName().isEmpty()
+                || userData.getPassword() == null || userData.getPassword().isEmpty()) {
             return new AbstractMap.SimpleEntry<>(UserStatus.INVALID_DATA, jws);
         }
 
@@ -129,9 +115,9 @@ public class UserManager implements IUserManager {
 
         if (checkPassword(userData.getPassword(), user.getPassword())) {
             if (!this.javaJws.checkUserLoggedIn(user.getUsername())) {
-                JavaJwsToken javaJwsToken = this.javaJws.createJws(userData.getName());
-                if (javaJwsToken.getJwsStatus().equals(JwsStatus.CREATED)) {
-                    jws = javaJwsToken.getJwsToken();
+                Map.Entry<JwsStatus, String> javaJwsToken = this.javaJws.createJws(userData.getName());
+                if (javaJwsToken.getKey().equals(JwsStatus.CREATED)) {
+                    jws = javaJwsToken.getValue();
                     return new AbstractMap.SimpleEntry<>(UserStatus.OK, jws);
                 } else {
                     return new AbstractMap.SimpleEntry<>(UserStatus.LOGIN_ISSUE, jws);
@@ -146,7 +132,7 @@ public class UserManager implements IUserManager {
 
     @Override
     public UserStatus logoutUser(final String userName, final String authString) {
-        if (userName.isEmpty() || authString.isEmpty()) {
+        if (userName == null || userName.isEmpty() || authString == null || authString.isEmpty()) {
             return UserStatus.INVALID_DATA;
         }
 
@@ -161,12 +147,11 @@ public class UserManager implements IUserManager {
             case UNAUTHORIZED:
                 return UserStatus.UNAUTHORIZED;
             case NO_SESSION:
-                return  UserStatus.NOT_FOUND;
+                return UserStatus.NOT_FOUND;
             default:
                 return UserStatus.INVALID_DATA;
         }
     }
-
 
 
     /**
@@ -189,14 +174,14 @@ public class UserManager implements IUserManager {
             }
             integer++;
         }
-        return  equals;
+        return equals;
     }
 
     /**
      * Pad password to desired length.
      *
      * @param passwordToPad password to pad.
-     * @param length to pad the password to.
+     * @param length        to pad the password to.
      * @return padded password.
      */
     private String padPassword(String passwordToPad, final int length) {
